@@ -1,4 +1,3 @@
-import os
 """
 Django settings for bestoon project.
 
@@ -12,6 +11,12 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = env('SECRET_KEY')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -124,12 +129,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'web/static')
+STATICFILES_DIRS =( os.path.join(STATIC_ROOT, 'css'),
+                    os.path.join(STATIC_ROOT, 'js')
+                  )
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
-POSTMARK_API_TOKEN = os.getenv('POSTMARK_API_TOKEN')
+RECAPTCHA_SECRET_KEY = env('RECAPTCHA_SECRET_KEY')
+POSTMARK_API_TOKEN = env('POSTMARK_API_TOKEN')
 

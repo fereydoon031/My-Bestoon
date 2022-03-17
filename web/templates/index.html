@@ -1,0 +1,28 @@
+{% extends "template.html"%}
+{% load static %}
+
+{% block content %}
+
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="alert alert-info" role="alert">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <a href="#">
+اپلیکیشن اندروید بستون من رو بزودی از اینجا دانلود کنید!      </a>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block footer %}
+
+<script type="text/javascript">
+$(".alert").fadeTo(10000, 500).slideUp(500, function(){
+    $(".alert").slideUp(10000);
+});
+</script>
+{% endblock %}
