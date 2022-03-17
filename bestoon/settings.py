@@ -1,3 +1,4 @@
+import os
 """
 Django settings for bestoon project.
 
@@ -20,12 +21,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%wwfa9(nj4rnl#k@63ai#hm_@$uhbdm%*1vyqo8fivi6xdhw$5'
+
+
+SECRET_KEY = os.getenv('SECRET_KEY')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://my-bestoon.herokuapp.com/','127.0.0.1']
 
 
 # Application definition
@@ -125,3 +129,7 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
+POSTMARK_API_TOKEN = os.getenv('POSTMARK_API_TOKEN')
+

@@ -1,0 +1,1 @@
+web: gunicorn bestoon.wsgi --log-file -
