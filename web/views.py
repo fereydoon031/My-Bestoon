@@ -13,9 +13,12 @@ import random
 import string
 import time
 import os
-from postmark import PMMail
-# Create your views here.
+from django.core.mail import EmailMessage
+from django.core.mail import send_mail
+
+
 random_str = lambda N: ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(N))
+
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
@@ -23,7 +26,6 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
-
 
 def grecaptcha_verify(request):
     #logger.debug("def grecaptcha_verify: " + format(request.POST))
@@ -89,10 +91,9 @@ def submit_expense(request):
 def index(request):
     context = {}
     return render(request,'index.html', context)
+
 def register(request):
-   # logger.debug("def register")
     if 'requestcode' in request.POST: #form is filled. if not spam, generate code and save in db, wait for email confirmation, return message
-       # logger.debug("def register requestcode: " + format(request.POST))
         #is this spam? check reCaptcha
         if not grecaptcha_verify(request): # captcha was not correct
             context = {'message': 'کپچای گوگل درست وارد نشده بود. شاید ربات هستید؟ کد یا کلیک یا تشخیص عکس زیر فرم را درست پر کنید. ببخشید که فرم به شکل اولیه برنگشته!'} #TODO: forgot password
@@ -111,17 +112,11 @@ def register(request):
                 username = request.POST['username']
                 temporarycode = Passwordresetcodes (email = email, time = now, code = code, username=username, password=password)
                 temporarycode.save()
-                """
-                //todo config pmmail for sending mail
-                message = PMMail(api_key = settings.POSTMARK_API_TOKEN,
-                                 subject = "فعال سازی اکانت بستون من برای شما ارسال شد.",
-                                 sender = "info@iranros.com",
-                                 to = email,
-                                 text_body = "برای فعال سازی ایمیلی تودویر خود روی لینک روبرو کلیک کنید: http://todoer.ir/accounts/register/?email={}&code={}".format(email, code),
-                                 tag = "account request")
-                message.send()
-                """
-                #logger.debug("def register email for http://sample.ir/accounts/register/?email={}&code={}".format(email, code))
+
+                message = "برای فعال سازی ایمیلی بستون من روی لینک روبرو کلیک کنید: {}?email={}&code={}".format(request.build_absolute_uri('/web/accounts/register/') ,email, code)
+                mail_subject = "فعال سازی اکانت بستون من برای شما ارسال شد."
+                email = EmailMessage( mail_subject, message,'ferydoon.jafari@gmail.com', [email]   )
+                email.send()
                 context = {'message': 'ایمیلی حاوی لینک فعال سازی اکانت به شما فرستاده شده، لطفا پس از چک کردن ایمیل، روی لینک کلیک کنید.'}
                 return render(request, 'login.html', context)
         else:
@@ -129,7 +124,6 @@ def register(request):
             #TODO: keep the form data
             return render(request, 'register.html', context)
     elif  'code' in request.GET: # user clicked on code
-        logger.debug("def register code: " + format(request.GET))
         email = request.GET['email']
         code = request.GET['code']
         if Passwordresetcodes.objects.filter(code=code).exists(): #if code is in temporary db, read the data and create the user
@@ -137,9 +131,8 @@ def register(request):
             newuser = User.objects.create(username=new_temp_user.username, password=new_temp_user.password, email=email)
             this_token =  random_str(48)
             token = Token.objects.create(user=newuser,token=this_token)
-            #logger.debug("def register user created: {} with code {}".format(newuser.username, code))
             Passwordresetcodes.objects.filter(code=code).delete() #delete the temporary activation code from db
-            context = {'message': 'اکانت شما فعال شد توکن شما {} است. آن را ذخیره کنید چون دیگر نمایش داده نمی شود. '}.format(this_token)
+            context = {'message': 'اکانت شما فعال شد توکن شما {} است. آن را ذخیره کنید چون دیگر نمایش داده نمی شود.'.format(this_token)}
             return render(request, 'login.html', context)
         else:
             context = {'message': 'این کد فعال سازی معتبر نیست. در صورت نیاز دوباره تلاش کنید'}

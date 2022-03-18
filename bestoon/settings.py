@@ -32,9 +32,11 @@ SECRET_KEY = env('SECRET_KEY')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-ALLOWED_HOSTS = ['my-bestoon.herokuapp.com','127.0.0.1','localhost']
+if os.environ.get('DJANGO_DEBUG'):
+    DEBUG = True
+else:
+    DEBUG = False
+    ALLOWED_HOSTS = ['my-bestoon.herokuapp.com','127.0.0.1','localhost']
 
 
 # Application definition
@@ -140,5 +142,14 @@ STATICFILES_DIRS =( os.path.join(STATIC_ROOT, 'css'),
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 RECAPTCHA_SECRET_KEY = env('RECAPTCHA_SECRET_KEY')
-#POSTMARK_API_TOKEN = env('POSTMARK_API_TOKEN')
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+SERVER_EMAIL = env('SERVER_EMAIL')
+
+ADMINS = [ (env('ADMINS'))]
