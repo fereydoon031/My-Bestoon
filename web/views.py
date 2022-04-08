@@ -6,6 +6,10 @@ from django.http import JsonResponse
 from json import JSONEncoder
 from django.views.decorators.csrf import csrf_exempt
 from web.models import User, Token, Expense, Income, Passwordresetcodes
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+
 from django.contrib.auth.hashers import make_password
 from datetime import datetime
 from django.conf import settings
@@ -91,6 +95,37 @@ def submit_expense(request):
 def index(request):
     context = {}
     return render(request,'index.html', context)
+
+def user_login(request):
+
+    if 'dologin' in request.POST: #form is filled. if not spam, generate code and save in db, wait for email confirmation, return message
+        if not grecaptcha_verify(request): # captcha was not correct
+            context = {'message': 'کپچای گوگل درست وارد نشده بود. شاید ربات هستید؟ کد یا کلیک یا تشخیص عکس زیر فرم را درست پر کنید.'} #TODO: forgot password
+            return render(request, 'login.html', context)
+
+        if User.objects.filter(username = request.POST['username']).exists(): # duplicate email
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    context = {'message': 'شما لاگین شدین'} #TODO: forgot password
+                    return render(request, 'login.html', context)
+                else:
+                    return HttpResponse('your account is disabled')
+            else:
+                context = {'message': 'نام کاربری یا کلمه عبور اشتباه بود'}
+                return render(request, 'login.html', context)
+        else:
+            context = {'message': 'شما حساب فعالی در بستون من ندارید لطفا ابتدا ثبت نام نمایید.'} #TODO: forgot password
+            #TODO: keep the form data
+            redirect('/web/accounts/login')
+            return render(request, 'login.html', context)
+            
+    else:
+        context = {'message': ''}
+        return render(request, 'login.html', context)
 
 def register(request):
     if 'requestcode' in request.POST: #form is filled. if not spam, generate code and save in db, wait for email confirmation, return message
