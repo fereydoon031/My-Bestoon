@@ -176,3 +176,7 @@ def register(request):
         context = {'message': ''}
         return render(request, 'register.html', context)
 
+def user_logout(request):
+    if not request.user.is_anonymous:
+        logout(request)
+    return redirect('/')
